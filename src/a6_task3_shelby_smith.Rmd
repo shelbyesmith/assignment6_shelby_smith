@@ -1,11 +1,48 @@
 ---
-title: "Lizard Lengths"
+title: "Female Lizard Lengths at the Jornada Basin LTER Site"
 author: "Shelby Smith"
 date: "12/4/2020"
 output: html_document
 ---
+### Introduction 
 
-```{r setup, include=FALSE}
+This data shows... 
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(janitor)
+library(kableExtra)
+library(broom)
+
+lizards_full<- read.csv(here("data", "lizards.csv"))
 ```
 
+```{r, include=FALSE}
+# Create and store a simplified version of the data frame that only includes variables spp, sex, and total_length
+# only include observations for female lizards of species CNUN and CNTE
+
+lizards_conds<- lizards_full %>% 
+  select(spp, sex, total_length) %>% 
+  filter(sex== "F",
+         spp %in% c("CNUN", "CNTE")) %>% 
+  select(spp, total_length)
+```
+
+```{r, echo=FALSE}
+lizards_conds %>% 
+  ggplot(aes(x=spp, y=total_length)) +
+  ggbeeswarm::geom_beeswarm(aes(color=spp))+
+  labs(x="Species",
+       y="Total Length (mm)")
+
+```
+
+Figure 1: This figure explores the total length (mm) of female lizards in the CNTE and CNUN species. Data source: Lightfoot, D. 2017
+
+
+
+### Data Citation: 
+ 
+ Lightfoot, D. 2017. Lizard pitfall trap data (LTER-II, LTER-III) ver 36. Environmental Data Initiative. https://doi.org/10.6073/pasta/ff37b4cace16a9943575f3fd7067064e
