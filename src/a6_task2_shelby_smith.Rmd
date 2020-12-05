@@ -1,0 +1,81 @@
+---
+title: "An Exploration of Political and Environmental Self-Identification"
+author: "Shelby Smith"
+date: "12/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(janitor)
+library(kableExtra)
+library(broom)
+
+conservation_survey_full<-read.csv(here("data","conservation_survey.csv"))
+```
+
+```{r, include=FALSE}
+# Create a simplified version of the survey data to only keep variables you need for this task, 'ENV_ID' and 'POL_OR'.
+conservation_survey<- conservation_survey_full %>% 
+  select("ENV_ID", "POL_OR")
+
+#add a new column that bins the political party into a binary response of either “conservative” (if POL_OR is 1 - 3) or “liberal” (if POL_OR 5 - 7)
+political_affiliation<-conservation_survey %>% 
+  mutate(affiliation=case_when(
+    POL_OR %in% c(1:3) ~ "conservative",
+    POL_OR %in% c(5:7) ~ "liberal")) %>% 
+  na.omit(political_affiliation, rows="NA") #remove respondents with 4,8,9 political affiliations
+```
+
+```{r, include=FALSE}
+# Create a finalized table that shows the counts and proportions of “liberal” and “conservative” survey respondents who responded “Yes”, “No” and “Unsure” to the statement “I consider myself an environmentalist.”
+pol_aff_counts<-political_affiliation %>% 
+  tabyl(affiliation, ENV_ID) 
+
+affiliation_proportions<- pol_aff_counts %>% 
+  adorn_percentages() %>% 
+  adorn_pct_formatting(digits = 2) %>% 
+  adorn_ns() %>% 
+  rename('Yes'='1',
+         'No' = '2',
+         'Unsure'='3',
+         ' '='affiliation')
+```
+
+### Introduction
+
+In this report, we explore how political affiliation influences if a person considers themself an environmentalist or not. The data used in this report is from, *"Influences on charitable giving for conservation"*, which was an online survey administered to over 1000 participants across the United States in August 2017 (Andrews Forest LTER Site and C. Batavia. 2019). We will then use a chi.squared test to determine if there is an association between these two variables. 
+
+### Survey Response Exploration 
+
+Table 1: Survey responses to the questions:  "I consider myself an environmentalist," with outcomes 1 = Yes, 2 = No, 3 = Unsure, and "How do you self-identify politically?" with response values 1 - 3 as “conservative” (strongly to slightly), and values 5 - 7 as “liberal” (slightly to strongly). Shown in parentheses are the actual counts of respondents in these categories. Data source: Andrews Forest LTER Site and C. Batavia. 2019. 
+
+```{r, echo=FALSE}
+# show a table in knitted document
+final_pol_table<- kbl(affiliation_proportions) %>% 
+  kable_paper("hover", full_width=F)
+final_pol_table
+```
+
+```{r, include=FALSE}
+
+# Make contingency table and run chi-square
+pol_aff_ct<- pol_aff_counts %>% 
+  column_to_rownames(var="affiliation")
+```
+
+```{r, include=FALSE}
+# run chi square and make a tidy table
+pol_aff_x2<- chisq.test(pol_aff_ct) 
+pol_aff_x2
+pol_aff_tidy<-tidy(pol_aff_x2)
+```
+
+### Hypothesis Test Results and Takeaways
+
+Using a chi.squared test, we conclude that political affiliation has a significant influence on if a person considers themself an environmentalist or not. ($\chi$^2^(`r pol_aff_tidy$parameter`) = `r round(pol_aff_tidy$statistic,2)`, *p* = `r round(pol_aff_tidy$p.value, 3)`). With a 0.05 level of significance, we were able to reject the null hypothesis that political affiliation and environmentalism are independent. 
+
+### Data citation: 
+Andrews Forest LTER Site and C. Batavia. 2019. Influences on charitable giving for conservation: Online survey data of 1,331 respondents across the US, August 2017 ver 3. Environmental Data Initiative. https://doi.org/10.6073/pasta/926e6270e324a1322a900da14d38b96c
