@@ -6,7 +6,9 @@ output: html_document
 ---
 ### Introduction 
 
-This data shows... 
+This data shows... 2 - 3 sentence mini-introduction describing the data, the question you’re
+answering, and the method you’ll use
+female lizards of two species: CNUN (Cnemidophorus uniparens, the Desert Grassland lizard) and CNTE (Cnemidophorus tessalatus, the Colorado Checkered lizard).
 
 ```{r setup, include=FALSE, warning=FALSE, message=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -15,6 +17,10 @@ library(here)
 library(janitor)
 library(kableExtra)
 library(broom)
+library(GGally)
+library(RColorBrewer)
+library(lubridate)
+library(effsize)
 
 lizards_full<- read.csv(here("data", "lizards.csv"))
 ```
@@ -30,18 +36,67 @@ lizards_conds<- lizards_full %>%
   select(spp, total_length)
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 lizards_conds %>% 
   ggplot(aes(x=spp, y=total_length)) +
-  ggbeeswarm::geom_beeswarm(aes(color=spp))+
+  ggbeeswarm::geom_beeswarm(aes(color=spp), size=4, alpha=.5)+
   labs(x="Species",
-       y="Total Length (mm)")
-
+       y="Total Length (mm)",
+       title = "Female Lizard Length Measurements by Species",
+       subtitle = "Jornada Basin LTER Site 1989-2006")+ 
+  stat_summary(fun=mean, #add a black point for the means 
+               geom="point", 
+               shape=20, 
+               size=6, 
+               color="black", 
+               fill="black")+
+  theme_minimal()+
+  theme(legend.position = "none")+
+  scale_color_brewer(palette = "Dark2")
 ```
 
-Figure 1: This figure explores the total length (mm) of female lizards in the CNTE and CNUN species. Data source: Lightfoot, D. 2017
+Figure 1: This figure explores the total length (mm) of female lizards in the species Cnemidophorus uniparens (CNUN) and Cnemidophorus tessalatus (CNTE) from the the Jornada Basin LTER Site. The black point indicates the mean total length for each species. Data source: Lightfoot, D. 2017
 
+Table 1: This table shows the Mean Length (mm), Standard Deviation in Mean Length, and sample size for female lizards of the CNTE and CNUN species caught in pitfall traps at the Jornada Basin LTER Site in 1989 and 2006. 
 
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+lizards_summary<- lizards_conds %>% 
+  group_by(spp) %>% 
+  na.omit() %>% 
+  summarise(mean_length=round(mean(total_length), digits = 2), 
+            sd_length=round(sd(total_length)),
+            sample_size=n())
+kable(lizards_summary, col.names = c("Species", "Mean Length (mm)", "Standard deviation", "Sample size")) %>% 
+  kable_paper("hover", full_width=F)
+  
+```
+
+```{r, include=FALSE}
+lizards_conds %>% 
+  GGally::ggpairs()
+```
+
+```{r}
+#T-test code
+#pull vectors
+spp<- lizards_conds %>% 
+  pull(spp)
+length<- lizards_conds %>% 
+  pull(total_length)
+
+lizards_ttest<- t.test(length~spp)
+length_tidy<- tidy(lizards_ttest)
+
+lizard_effsize<- cohen.d(length, spp)
+```
+
+### Summary
+
+The difference in means is significant (Welch's two-sample t-test: t(`r round(length_tidy$parameter,2)`) = `r round(length_tidy$statistic,2)`, p < 0.001), and the effect size is moderate (Cohen's *d* = `r round(lizard_effsize$estimate,2)`).
+
+A 1 - 2 sentence summary statement describing your findings, that at least
+includes: the results of your hypothesis test, the effect size, and the actual means
+difference between the two groups
 
 ### Data Citation: 
  

@@ -1,0 +1,40 @@
+---
+title: "Mono Lake Levels"
+author: "Shelby Smith"
+date: "12/5/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+library(here)
+library(tidyverse)
+library(janitor)
+library(RColorBrewer)
+```
+
+```{r read in data, include=FALSE}
+mono_lake<- read_csv(here("data", "mono_lake.csv")) %>% 
+  clean_names()
+```
+
+```{r}
+mono_lake %>% 
+  ggplot(aes(y=lake_level_feet_above_sea_level, x=year)) +
+  geom_line(color="turquoise4")+
+  geom_line(aes(y=stable_level), color="paleturquoise4", size=.7)+ #stable level
+      geom_hline(yintercept=6377, color="orange", size=.5, linetype='dotted') + # land bridges emerge between the mainland and islands, allowing predators (e.g. coyotes) to access major bird nesting sites
+theme_minimal()+
+  labs(title = "Mono Lake Levels ",
+       x="Year",
+       y="Lake Level (ft above sea level)")
+  
+```
+
+
+```{r}
+  mono_lake %>% 
+ggplot(mapping=aes(x=year,y=lake_level_feet_above_sea_level))+
+  geom_ribbon()
+```
+
