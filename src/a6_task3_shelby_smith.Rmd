@@ -58,7 +58,7 @@ lizards_conds %>%
 
 Figure 1: This figure explores the total length (mm) of female lizards in the species Cnemidophorus uniparens (CNUN) and Cnemidophorus tessalatus (CNTE) from the the Jornada Basin LTER Site. The black point indicates the mean total length for each species. Data source: Lightfoot, D. 2017
 
-Table 1: This table shows the Mean Length (mm), Standard Deviation in Mean Length, and Sample Size for female lizards of the CNTE and CNUN species caught in pitfall traps at the Jornada Basin LTER Site in 1989 and 2006. 
+Table 1: This table shows the Mean Length (mm), Standard Deviation in Mean Length, and Sample Size for female lizards of the CNTE and CNUN species caught in pitfall traps at the Jornada Basin LTER Site in 1989 and 2006. Data source: Lightfoot, D. 2017
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 lizards_summary<- lizards_conds %>% 
