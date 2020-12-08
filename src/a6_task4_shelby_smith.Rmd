@@ -1,5 +1,5 @@
 ---
-title: "Mono Lake Levels"
+title: "Mono Lake, Lee Vining, CA: Lake Levels"
 author: "Shelby Smith"
 date: "12/5/2020"
 output: html_document
@@ -18,23 +18,51 @@ mono_lake<- read_csv(here("data", "mono_lake.csv")) %>%
   clean_names()
 ```
 
-```{r}
-mono_lake %>% 
+```{r, include=FALSE}
+#avg vertical change
+vert<-mono_lake %>% 
+  na.omit(NA) %>% 
+  pull(vertical_change)
+vert_avg<- mean(vert)
+vert_avg
+```
+
+
+```{r, include=FALSE}
+mono_lake_viz<- mono_lake %>% 
   ggplot(aes(y=lake_level_feet_above_sea_level, x=year)) +
   geom_line(color="turquoise4")+
-  geom_line(aes(y=stable_level), color="paleturquoise4", size=.7)+ #stable level
-      geom_hline(yintercept=6377, color="orange", size=.5, linetype='dotted') + # land bridges emerge between the mainland and islands, allowing predators (e.g. coyotes) to access major bird nesting sites
-theme_minimal()+
-  labs(title = "Mono Lake Levels ",
-       x="Year",
-       y="Lake Level (ft above sea level)")
+#  scale_x_continuous(breaks=seq(from=1850, to=2017, by=10)) could use this to change x axis, but it messes with the annotations at this pont
   
+  annotate(geom="point", x=1941, y=6418, size=6, shape=21, fill="transparent")+ #Diversion circle
+    annotate(geom="text", x=1953, y=6421, label="1941: Water Diversions to LA Begin", size=2.5)+ #Diversion label
+  
+  annotate(geom = "point", x=1994, y=6374, size=6, shape=21, fill="transparent")+ #Decision point
+    annotate(geom = "text", x=1984, y=6371, label="1994: California State Water Resources Control Board Decision", size=2.5)+ #decision label
+  
+  geom_hline(yintercept=6360, color="orange", size=.5, linetype='dashed') + #brine shrimp line
+    annotate(geom = "text", x=1850, y=6362, 
+             label="Decreased availability of brine shrimp as food source for birds", size=2.5, hjust=0)+
+  
+  geom_hline(yintercept=6392, color="Grey3", size=.5, linetype='dashed') + #stable level line
+    annotate(geom="text", x=1850, y=6394, 
+             label="Target Lake Level for healthy ecosystem function", size=2.5, hjust=0)+
+  
+  geom_hline(yintercept=6377, color="red", size=.5, linetype='dashed') + #land bridges line
+    annotate(geom = "text", x=1850, y= 6379, 
+             label="Land bridges connect mainland predators to island nesting sites", size=2.5, hjust=0 )+
+  
+  theme_linedraw()+
+  labs(title = "Mono Lake Water Levels: 1850-2017",
+       x="Year",
+       y="Lake Level (feet above sea level)")
 ```
 
-
-```{r}
-  mono_lake %>% 
-ggplot(mapping=aes(x=year,y=lake_level_feet_above_sea_level))+
-  geom_ribbon()
+```{r, echo=FALSE, fig.width = 10}
+mono_lake_viz
 ```
+
+Figure 1: Mono Lake water levels from 1850 to 2017. The blue line shows the lake level measured in feet above sea level, with two specific points highlighted to reflect significant events in the lake's history. Horizontal dashed lines represent ecologically relevant lake levels. Water levels in the lake control salinity: high lake levels dilute the salt content, lowering salinity. High salinity, occurring at low water, decreases food availability for migrating and nesting birds. Data Source: Mono Lake Committee
+
+
 
