@@ -6,9 +6,10 @@ output: html_document
 ---
 ### Introduction 
 
-This data shows... 2 - 3 sentence mini-introduction describing the data, the question you’re
-answering, and the method you’ll use
-female lizards of two species: CNUN (Cnemidophorus uniparens, the Desert Grassland lizard) and CNTE (Cnemidophorus tessalatus, the Colorado Checkered lizard).
+This data explores female lizard length of the Desert Grassland and Colorado Checkers lizards species. We will use a two-sample t-test to determine if there are significant differences in total length (mm) from the sample population collected in the Jornada Basin LTER Site from 1989 to 2006, published in David Lightfoot's *Lizard pitfall trap data (LTER-II, LTER-III) ver 36* . 
+
+*CNUN (Cnemidophorus uniparens, the Desert Grassland lizard)  
+CNTE (Cnemidophorus tessalatus, the Colorado Checkered lizard)*
 
 ```{r setup, include=FALSE, warning=FALSE, message=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -57,7 +58,7 @@ lizards_conds %>%
 
 Figure 1: This figure explores the total length (mm) of female lizards in the species Cnemidophorus uniparens (CNUN) and Cnemidophorus tessalatus (CNTE) from the the Jornada Basin LTER Site. The black point indicates the mean total length for each species. Data source: Lightfoot, D. 2017
 
-Table 1: This table shows the Mean Length (mm), Standard Deviation in Mean Length, and sample size for female lizards of the CNTE and CNUN species caught in pitfall traps at the Jornada Basin LTER Site in 1989 and 2006. 
+Table 1: This table shows the Mean Length (mm), Standard Deviation in Mean Length, and Sample Size for female lizards of the CNTE and CNUN species caught in pitfall traps at the Jornada Basin LTER Site in 1989 and 2006. 
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 lizards_summary<- lizards_conds %>% 
@@ -66,6 +67,7 @@ lizards_summary<- lizards_conds %>%
   summarise(mean_length=round(mean(total_length), digits = 2), 
             sd_length=round(sd(total_length)),
             sample_size=n())
+
 kable(lizards_summary, col.names = c("Species", "Mean Length (mm)", "Standard deviation", "Sample size")) %>% 
   kable_paper("hover", full_width=F)
   
@@ -73,30 +75,44 @@ kable(lizards_summary, col.names = c("Species", "Mean Length (mm)", "Standard de
 
 ```{r, include=FALSE}
 lizards_conds %>% 
-  GGally::ggpairs()
+  GGally::ggpairs() #normal enough distribution to move on with a t.test.
 ```
 
-```{r}
+```{r, include=FALSE}
 #T-test code
 #pull vectors
 spp<- lizards_conds %>% 
   pull(spp)
 length<- lizards_conds %>% 
-  pull(total_length)
+  pull(total_length) 
 
 lizards_ttest<- t.test(length~spp)
 length_tidy<- tidy(lizards_ttest)
 
-lizard_effsize<- cohen.d(length, spp)
+lizard_effsize<- cohen.d(na.rm=TRUE, length, spp)
+lizard_effsize
 ```
+
+```{r, include=FALSE}
+CNUN_mean<- lizards_conds %>% 
+  filter(spp=="CNUN") %>% 
+  na.omit() %>% 
+  summarise(mean_CNUN=mean(total_length)) %>% 
+  pull()
+
+CNTE_mean<- lizards_conds %>% 
+  filter(spp=="CNTE") %>% 
+  na.omit() %>% 
+  summarise(mean_CNTE=mean(total_length)) %>% 
+  pull() %>% 
+  round(digits = 2)
+```
+
 
 ### Summary
 
-The difference in means is significant (Welch's two-sample t-test: t(`r round(length_tidy$parameter,2)`) = `r round(length_tidy$statistic,2)`, p < 0.001), and the effect size is moderate (Cohen's *d* = `r round(lizard_effsize$estimate,2)`).
-
-A 1 - 2 sentence summary statement describing your findings, that at least
-includes: the results of your hypothesis test, the effect size, and the actual means
-difference between the two groups
+A two sample t.test reveals that there is a significant difference in mean lengths between the female Desert Grassland lizard (CNUN) and the Colorado Checkered lizard (CNTE) at the Jornada Basin LTER Site. (Welch's two-sample t-test: t(`r round(length_tidy$parameter,2)`) = `r round(length_tidy$statistic,2)`, p < 0.001), and the effect size is large (Cohen's *d* = `r round(lizard_effsize$estimate,2)`). The absolute difference in mean length between the female lizards species is `r round(CNTE_mean) - round(CNUN_mean)` g (a `r round((CNTE_mean - CNUN_mean)/((CNTE_mean + CNUN_mean)/2)*100, 2)`% difference).
+ 
 
 ### Data Citation: 
  
